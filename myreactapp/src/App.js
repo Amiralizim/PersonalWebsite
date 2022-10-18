@@ -1,4 +1,5 @@
-import Navigation from './components/Navigation'
+import Navigation from './components/Navigation';
+import Footer from './components/Footer';
 import './App.css';
 import AboutMe from './components/AboutMe';
 import Music from './components/Music';
@@ -11,11 +12,12 @@ function App() {
     <div className="App">
       <Navigation/>
       <Routes>
-        <Route path='/aboutMe' component={AboutMe}/>
-        <Route path='/music' component={Music}/>
-        <Route path='/projects' component={Projects}/>
-        <Route exact path='/' component={Home}/>
+        <Route path='/aboutMe' element={<AboutMe/>}/>
+        <Route path='/music' element={<Music/>}/>
+        <Route path='/projects' element={<Projects/>}/>
+        <Route exact path='/' element={<Home/>}/>
       </Routes>
+      <Footer/>
     </div>
   );
 }

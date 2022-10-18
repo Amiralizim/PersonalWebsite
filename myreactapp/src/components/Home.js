@@ -1,6 +1,9 @@
+import Game from '../Game';
+
 function Home() {
+    console.log("render home")
     return (
-        <p>Home</p>
+        <Game/>
     );
 }
 
