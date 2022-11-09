@@ -5,7 +5,7 @@ import AboutMe from './components/AboutMe';
 import Music from './components/Music';
 import Projects from './components/Projects';
 import Home from './components/Home';
-import {Route, Routes } from 'react-router-dom';
+import {Route, Routes} from 'react-router-dom';
 
 function App() {
   return (

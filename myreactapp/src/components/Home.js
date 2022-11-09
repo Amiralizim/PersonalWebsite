@@ -1,9 +1,12 @@
 import Game from '../Game';
+import './Home.css';
 
 function Home() {
     console.log("render home")
     return (
-        <Game/>
+        <div className="center">
+            <Game/>
+        </div>
     );
 }
 
