@@ -9,36 +9,86 @@ function Game() {
     const WIDTH = 600;
     const rows = HEIGHT / CELL_SIZE;
     const cols = WIDTH / CELL_SIZE;
-    let [cells, setCells] = useState([]);
     let boardRef = useRef([]);
+    let [isRunning, setIsRunning] = useState(false);
+    let [cells, setCells] = useState([]);
     let [board, setBoard] = useState([]);
-    console.log("board reset called: ", board);
+    let [timeoutHandler, setTimeoutHandler] = useState(null);
+    let [interval, setInterval] = useState(1000);
 
     useEffect(() => {
+        console.log("empty board")
         setBoard(makeEmptyBoard)
     }, []);
 
-    function makeEmptyBoard() {
-        let board = [];
-        for (let y=0; y<rows; y++){
-            board[y] = [];
-            for (let x=0; x < cols; x++){
-                board[y][x] = false;
+    useEffect(() => {
+        if(board.length != 0){
+            setCells(makeCells(board))
+        }
+
+    }, [board]);
+
+    useEffect(() => {
+        if(cells.length != 0){
+            if (isRunning){
+                setTimeoutHandler(window.setTimeout(() => {
+                    runIteration();
+                }, interval))
             }
         }
-        return board;
+
+    }, [cells]);
+
+    function calculateNeighbors(board, x, y) {
+        let neighbours = 0
+        const dirs =  [[-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1]];
+        for (let i = 0; i<dirs.length; i++){
+            const dir = dirs[i];
+            let y1 = y + dir[0];
+            let x1 = x + dir[1];
+            if (x1 >= 0 && x1 < cols && y1 >= 0 && y1 < rows && board[y1][x1]) {
+                neighbours++;
+            }
+        }
+        return neighbours;
+    }
+
+    function runGame(){
+        setIsRunning(true);
+        runIteration();
+    }
+
+
+
+    function stopGame(){
+        setIsRunning(false);
+        if(timeoutHandler){
+            window.clearTimeout(timeoutHandler);
+            setTimeoutHandler(null);
+        }
+    }
+
+    function makeEmptyBoard() {
+        let temp_board = [];
+        for (let y=0; y<rows; y++){
+            temp_board[y] = [];
+            for (let x=0; x < cols; x++){
+                temp_board[y][x] = false;
+            }
+        }
+        return temp_board;
     }
 
     function makeCells(board){
-        let cells = [];
+        let temp_cells = [];
         for (let y=0; y < rows; y++){
             for (let x=0; x< cols; x++){
                 if(board[y][x]){
-                    cells.push({x,y})
+                    temp_cells.push({x,y})
                 }
             }
         }
-        return cells;
+        return temp_cells;
     }
 
     function getElementOffset(){
@@ -59,8 +109,112 @@ function Game() {
         if (x >= 0 && x <= cols && y >= 0 && y <= rows) {
             board[y][x] = !board[y][x];
         }
+        console.log("y: ", y, "x: ", x)
 
         setCells(makeCells(board));
+    }
+
+    function handleIntervalChange(event){
+        setInterval(event.target.value)
+    }
+
+    function handleClear(){
+        setBoard(makeEmptyBoard);
+    }
+
+    function handleRandom(){
+        let newBoard = makeEmptyBoard();
+        console.log(rows)
+        console.log(cols)
+        // for(let y=0; y<rows; y++){
+        //     for(let x=0; x<cols; x++){
+        //         newBoard[y][x] = (Math.random() >= 0.5) 
+        //     }
+        // }
+        let list = [
+            [9, 12],
+            [10, 12],
+            [11, 12],
+            [12, 11],
+            [12, 10],
+            [12, 9],
+            [11, 7],
+            [10, 7],
+            [9, 7],
+            [7, 11],
+            [7, 10],
+            [7, 9],
+
+            [9, 14],
+            [10, 14],
+            [11, 14],
+            [12, 15],
+            [12, 16],
+            [12, 17],
+            [11, 19],
+            [10, 19],
+            [9, 19],
+            [7, 15],
+            [7, 16],
+            [7, 17],
+
+            [14, 9],
+            [14, 10],
+            [14, 11],
+            [15, 12],
+            [16, 12],
+            [17, 12],
+            [19, 11],
+            [19, 10],
+            [19, 9],
+            [15, 7],
+            [16, 7],
+            [17, 7],
+
+            [15, 14],
+            [16, 14],
+            [17, 14],
+            [14, 15],
+            [14, 16],
+            [14, 17],
+            [15, 19],
+            [16, 19],
+            [17, 19],
+            [19, 15],
+            [19, 16],
+            [19, 17]
+        ]
+        list.forEach((element) => {
+            newBoard[element[0]][element[1]] = true;
+        })
+
+    
+        setBoard(newBoard);
+        // setCells(makeCells(board));
+
+    }
+
+    function runIteration() {
+        console.log("first")
+        let newBoard = makeEmptyBoard();
+        for (let y = 0; y < rows; y++){
+            for(let x = 0; x < cols; x++){
+                let neighbours = calculateNeighbors(board, x, y);
+                if (board[y][x]) {
+                    if (neighbours === 2 || neighbours === 3){
+                        newBoard[y][x] = true;
+                    } else {
+                        newBoard[y][x] = false;
+                    }
+                } else {
+                    if(!board[y][x] && neighbours === 3) {
+                        newBoard[y][x] = true;
+                    }
+                }
+            }
+        }
+
+        setBoard(newBoard);
     }
 
 
@@ -77,9 +231,20 @@ function Game() {
             > 
             {
                 cells.map(cell => (
+                    // console.log(cell)
                     <Cell x={cell.x} y={cell.y} key={`${cell.x}, ${cell.y}`}/>
                 ))
             }
+            </div>
+
+            <div className="controls">
+                Update every <input value={interval} onChange={(event) => handleIntervalChange(event)} /> msec
+                {isRunning ?
+                    <button className="button" onClick={stopGame}>Stop</button> :
+                    <button className="button" onClick={runGame}>Run</button>
+                }
+                <button className="button" onClick={handleRandom}>Random</button>
+                <button className="button" onClick={handleClear}>Clear</button>
             </div>      
         </div>    
     );
